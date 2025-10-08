@@ -14,21 +14,25 @@ const loading = ref(false)
 const msg = ref('')
 const error = ref('')
 
-
+// Chỉ bật khi bấm submit mà sai
 const showRules = ref(false)
+const clearRules = () => { showRules.value = false }
 
+// === Yêu cầu mật khẩu: >= 8 ký tự, >= 1 in hoa, >= 1 ký tự đặc biệt ===
 const lenOK = computed(() => password.value.length >= 8)
 const hasUpper = computed(() => /[A-Z]/.test(password.value))
 const hasSpecial = computed(() => /[^A-Za-z0-9]/.test(password.value))
-const confirmOK = computed(() => confirmPassword.value !== '' && confirmPassword.value === password.value)
+const confirmOK = computed(() =>
+  confirmPassword.value !== '' && confirmPassword.value === password.value
+)
 const rulesInvalid = computed(() => !lenOK.value || !hasUpper.value || !hasSpecial.value)
 
 async function onSubmit () {
- 
   msg.value = ''
   error.value = ''
   showRules.value = false
 
+  // Nếu vi phạm rule hoặc confirm sai -> hiện khối quy tắc & dừng
   if (rulesInvalid.value || !confirmOK.value) {
     showRules.value = true
     return
@@ -85,6 +89,7 @@ async function onSubmit () {
         <label class="block text-sm mb-1">Password</label>
         <input
           v-model="password"
+          @input="clearRules"
           type="password"
           required
           autocomplete="new-password"
@@ -100,6 +105,7 @@ async function onSubmit () {
         <label class="block text-sm mb-1">Confirm password</label>
         <input
           v-model="confirmPassword"
+          @input="clearRules"
           type="password"
           required
           autocomplete="new-password"
@@ -110,10 +116,8 @@ async function onSubmit () {
         />
       </div>
 
-      <div
-        v-if="showRules"
-        class="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm"
-      >
+      <!-- Khối quy tắc: chỉ hiện sau khi bấm Sign up mà sai -->
+      <div v-if="showRules" class="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm">
         <p class="font-medium text-rose-700">Password must meet all rules:</p>
         <ul class="mt-2 list-disc pl-5 space-y-1">
           <li :class="lenOK ? 'line-through text-emerald-700' : 'text-rose-700'">
@@ -131,9 +135,11 @@ async function onSubmit () {
         </p>
       </div>
 
+      <!-- Messages -->
       <p v-if="msg" class="text-sm text-emerald-600">{{ msg }}</p>
       <p v-if="error" class="text-sm text-rose-600">{{ error }}</p>
 
+      <!-- Submit: chỉ disable khi loading -->
       <button
         :disabled="loading"
         class="w-full rounded-lg px-4 py-2 bg-slate-900 text-white hover:bg-slate-800 disabled:opacity-50"
