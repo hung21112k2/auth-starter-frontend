@@ -17,12 +17,18 @@ onMounted(async () => {
     loading.value = false
     return
   }
+
   try {
     await api.verifyEmail(token)
-    // đặt cờ để các tab khác biết đã verify xong
-    localStorage.setItem('auth.email_verified', JSON.stringify({ at: Date.now() }))
+
+    // mark verified so other tabs/pages can react (storage event)
+    localStorage.setItem(
+      'auth.email_verified',
+      JSON.stringify({ at: Date.now() })
+    )
+
     msg.value = 'Your email has been verified.'
-    // chuyển qua trang success
+    // small delay so the user sees the message, then redirect
     setTimeout(() => router.replace({ name: 'verify-success' }), 500)
   } catch (e) {
     error.value = e.message || 'Verification failed.'
@@ -35,8 +41,11 @@ onMounted(async () => {
 <template>
   <div class="max-w-md mx-auto space-y-4">
     <h2 class="text-2xl font-bold">Email verification</h2>
+
     <p v-if="loading" class="text-slate-500">Verifying...</p>
-    <p v-else-if="msg" class="text-emerald-600">{{ msg }} Redirecting…</p>
+    <p v-else-if="msg" class="text-emerald-600">
+      {{ msg }} Redirecting…
+    </p>
     <p v-else-if="error" class="text-rose-600">{{ error }}</p>
   </div>
 </template>

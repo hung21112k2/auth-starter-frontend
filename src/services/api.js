@@ -17,22 +17,23 @@ async function request(path, { method = 'GET', body, headers } = {}) {
   const text = await res.text()
   let data
   try { data = text ? JSON.parse(text) : null } catch { data = text }
-
-  if (!res.ok) {
-    throw new Error(typeof data === 'string' ? data : (data?.message || 'Request failed'))
-  }
+  if (!res.ok) throw new Error(typeof data === 'string' ? data : (data?.message || 'Request failed'))
   return data
 }
 
 export const api = {
-  // payload: { email, username, password, full_name }
+  // auth
   signup: (payload) => request('/auth/signup', { method: 'POST', body: payload }),
   login:  (payload) => request('/auth/login',  { method: 'POST', body: payload }),
   me:     () => request('/auth/me'),
 
-  // email verification
-  verifyEmail: (token) => request(`/auth/verify?token=${encodeURIComponent(token)}`),
+  // verify email
+  verifyEmail:  (token) => request(`/auth/verify?token=${encodeURIComponent(token)}`),
   resendVerify: (email) => request('/auth/resend', { method: 'POST', body: { email } }),
+
+  // forgot / reset
+  forgotPassword: (email) => request('/auth/forgot', { method: 'POST', body: { email } }),
+  resetPassword:  ({ token, password }) => request('/auth/reset', { method: 'POST', body: { token, password } }),
 }
 
 export default api
