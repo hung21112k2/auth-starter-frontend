@@ -14,18 +14,19 @@ const loading = ref(false)
 const msg = ref('')
 const error = ref('')
 
-// Validate cơ bản
-const pwdTooShort = computed(() => password.value && password.value.length < 8)
-const pwdNotMatch = computed(
-  () => confirmPassword.value && confirmPassword.value !== password.value
-)
+// === Password rules: >= 8 chars, >= 1 uppercase, >= 1 special ===
+const lenOK = computed(() => password.value.length >= 8)
+const hasUpper = computed(() => /[A-Z]/.test(password.value))
+const hasSpecial = computed(() => /[^A-Za-z0-9]/.test(password.value))
+const confirmOK = computed(() => confirmPassword.value !== '' && confirmPassword.value === password.value)
+
 const formInvalid = computed(() =>
   !fullName.value ||
   !email.value ||
-  !password.value ||
-  !confirmPassword.value ||
-  pwdTooShort.value ||
-  pwdNotMatch.value
+  !lenOK.value ||
+  !hasUpper.value ||
+  !hasSpecial.value ||
+  !confirmOK.value
 )
 
 async function onSubmit() {
@@ -88,9 +89,12 @@ async function onSubmit() {
           autocomplete="new-password"
           class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring"
         />
-        <p v-if="pwdTooShort" class="text-xs text-amber-600 mt-1">
-          Password must be at least 8 characters.
-        </p>
+        <!-- checklist -->
+        <ul class="mt-2 text-xs space-y-1">
+          <li :class="lenOK ? 'text-emerald-600' : 'text-slate-500'">At least 8 characters</li>
+          <li :class="hasUpper ? 'text-emerald-600' : 'text-slate-500'">At least 1 uppercase letter</li>
+          <li :class="hasSpecial ? 'text-emerald-600' : 'text-slate-500'">At least 1 special character</li>
+        </ul>
       </div>
 
       <!-- Confirm Password -->
@@ -103,7 +107,7 @@ async function onSubmit() {
           autocomplete="new-password"
           class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring"
         />
-        <p v-if="pwdNotMatch" class="text-xs text-rose-600 mt-1">
+        <p v-if="!confirmOK && confirmPassword" class="text-xs text-rose-600 mt-1">
           Password confirmation does not match.
         </p>
       </div>
