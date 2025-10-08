@@ -22,15 +22,18 @@ async function onSubmit () {
 
   loading.value = true
   try {
-
     const res = await api.login({
-      email: identifier.value.trim(),
+      email: identifier.value.trim(), // backend tự nhận diện email/username
       password: password.value,
     })
     setToken(res.token)
     router.push({ name: 'dashboard' })
   } catch (e) {
-    error.value = e.message || 'Login failed'
+    if (String(e.message).toLowerCase().includes('not verified')) {
+      error.value = 'Email chưa xác thực. Hãy kiểm tra hộp thư hoặc bấm “Resend” ở trang Verify.'
+    } else {
+      error.value = e.message || 'Login failed'
+    }
   } finally {
     loading.value = false
   }
@@ -71,12 +74,10 @@ async function onSubmit () {
             title="Show/Hide password"
             @click="showPwd = !showPwd"
           >
-            <!-- eye -->
             <svg v-if="!showPwd" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/>
               <circle cx="12" cy="12" r="3"/>
             </svg>
-            <!-- eye-off -->
             <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M3 3l18 18"/>
               <path d="M9.9 4.2A10.9 10.9 0 0 1 12 4c6.5 0 10 7 10 7a17.4 17.4 0 0 1-3.2 4.1M6 6A16.5 16.5 0 0 0 2 11s3.5 7 10 7a10.7 10.7 0 0 0 3.1-.4"/>

@@ -21,12 +21,12 @@ const showPwd2 = ref(false)
 const showRules = ref(false)
 const clearRules = () => { showRules.value = false }
 
+// Rules
 const lenOK = computed(() => password.value.length >= 8)
 const hasUpper = computed(() => /[A-Z]/.test(password.value))
 const hasSpecial = computed(() => /[^A-Za-z0-9]/.test(password.value))
 const confirmOK = computed(() => confirmPassword.value !== '' && confirmPassword.value === password.value)
 const rulesInvalid = computed(() => !lenOK.value || !hasUpper.value || !hasSpecial.value)
-
 const usernameOK = computed(() => /^[A-Za-z0-9_]{3,50}$/.test(username.value || ''))
 
 async function onSubmit () {
@@ -47,8 +47,9 @@ async function onSubmit () {
       password: password.value,
       full_name: fullName.value.trim(),
     })
-    msg.value = 'Sign-up successful! Please log in.'
-    setTimeout(() => router.push({ name: 'login' }), 700)
+  
+    msg.value = `Sign-up successful! We sent a verification email to ${email.value}.`
+    router.push({ name: 'verify-sent', query: { email: email.value } })
   } catch (e) {
     error.value = e.message || 'Sign-up failed'
   } finally {
@@ -67,6 +68,7 @@ async function onSubmit () {
         <label class="block text-sm mb-1">Full name</label>
         <input
           v-model.trim="fullName"
+          @input="clearRules"
           type="text"
           required
           autocomplete="name"
@@ -79,6 +81,7 @@ async function onSubmit () {
         <label class="block text-sm mb-1">Email</label>
         <input
           v-model.trim="email"
+          @input="clearRules"
           type="email"
           required
           autocomplete="email"
@@ -91,6 +94,7 @@ async function onSubmit () {
         <label class="block text-sm mb-1">Username</label>
         <input
           v-model.trim="username"
+          @input="clearRules"
           type="text"
           required
           minlength="3"
@@ -125,12 +129,10 @@ async function onSubmit () {
             title="Show/Hide password"
             @click="showPwd = !showPwd"
           >
-            <!-- eye -->
             <svg v-if="!showPwd" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/>
               <circle cx="12" cy="12" r="3"/>
             </svg>
-            <!-- eye-off -->
             <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M3 3l18 18"/>
               <path d="M9.9 4.2A10.9 10.9 0 0 1 12 4c6.5 0 10 7 10 7a17.4 17.4 0 0 1-3.2 4.1M6 6A16.5 16.5 0 0 0 2 11s3.5 7 10 7a10.7 10.7 0 0 0 3.1-.4"/>
@@ -159,7 +161,7 @@ async function onSubmit () {
             type="button"
             class="absolute inset-y-0 right-0 px-3 flex items-center text-slate-500 hover:text-slate-700"
             :aria-pressed="showPwd2"
-            title="Show/Hide password"
+            title="Show/Hide confirm password"
             @click="showPwd2 = !showPwd2"
           >
             <svg v-if="!showPwd2" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -175,6 +177,7 @@ async function onSubmit () {
         </div>
       </div>
 
+      <!-- Rules box (only after failed submit) -->
       <div v-if="showRules" class="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm">
         <p class="font-medium text-rose-700">Please fix the following:</p>
         <ul class="mt-2 list-disc pl-5 space-y-1">
@@ -196,7 +199,6 @@ async function onSubmit () {
         </p>
       </div>
 
-      <!-- Messages -->
       <p v-if="msg" class="text-sm text-emerald-600">{{ msg }}</p>
       <p v-if="error" class="text-sm text-rose-600">{{ error }}</p>
 

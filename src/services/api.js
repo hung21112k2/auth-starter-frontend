@@ -29,6 +29,10 @@ export const api = {
   signup: (payload) => request('/auth/signup', { method: 'POST', body: payload }),
   login:  (payload) => request('/auth/login',  { method: 'POST', body: payload }),
   me:     () => request('/auth/me'),
+
+  // email verification
+  verifyEmail: (token) => request(`/auth/verify?token=${encodeURIComponent(token)}`),
+  resendVerify: (email) => request('/auth/resend', { method: 'POST', body: { email } }),
 }
 
 export default api
