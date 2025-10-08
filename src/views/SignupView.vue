@@ -14,31 +14,32 @@ const loading = ref(false)
 const msg = ref('')
 const error = ref('')
 
-// === Password rules: >= 8 chars, >= 1 uppercase, >= 1 special ===
+
+const showRules = ref(false)
+
 const lenOK = computed(() => password.value.length >= 8)
 const hasUpper = computed(() => /[A-Z]/.test(password.value))
 const hasSpecial = computed(() => /[^A-Za-z0-9]/.test(password.value))
 const confirmOK = computed(() => confirmPassword.value !== '' && confirmPassword.value === password.value)
+const rulesInvalid = computed(() => !lenOK.value || !hasUpper.value || !hasSpecial.value)
 
-const formInvalid = computed(() =>
-  !fullName.value ||
-  !email.value ||
-  !lenOK.value ||
-  !hasUpper.value ||
-  !hasSpecial.value ||
-  !confirmOK.value
-)
-
-async function onSubmit() {
-  if (formInvalid.value) return
-  error.value = ''
+async function onSubmit () {
+ 
   msg.value = ''
+  error.value = ''
+  showRules.value = false
+
+  if (rulesInvalid.value || !confirmOK.value) {
+    showRules.value = true
+    return
+  }
+
   loading.value = true
   try {
     await api.signup({
       email: email.value.trim(),
       password: password.value,
-      full_name: fullName.value.trim()
+      full_name: fullName.value.trim(),
     })
     msg.value = 'Sign-up successful! Please log in.'
     setTimeout(() => router.push({ name: 'login' }), 700)
@@ -87,14 +88,11 @@ async function onSubmit() {
           type="password"
           required
           autocomplete="new-password"
-          class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring"
+          :class="[
+            'w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring',
+            showRules && (!lenOK || !hasUpper || !hasSpecial) ? 'border-rose-500' : ''
+          ]"
         />
-        <!-- checklist -->
-        <ul class="mt-2 text-xs space-y-1">
-          <li :class="lenOK ? 'text-emerald-600' : 'text-slate-500'">At least 8 characters</li>
-          <li :class="hasUpper ? 'text-emerald-600' : 'text-slate-500'">At least 1 uppercase letter</li>
-          <li :class="hasSpecial ? 'text-emerald-600' : 'text-slate-500'">At least 1 special character</li>
-        </ul>
       </div>
 
       <!-- Confirm Password -->
@@ -105,20 +103,39 @@ async function onSubmit() {
           type="password"
           required
           autocomplete="new-password"
-          class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring"
+          :class="[
+            'w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring',
+            showRules && !confirmOK ? 'border-rose-500' : ''
+          ]"
         />
-        <p v-if="!confirmOK && confirmPassword" class="text-xs text-rose-600 mt-1">
+      </div>
+
+      <div
+        v-if="showRules"
+        class="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm"
+      >
+        <p class="font-medium text-rose-700">Password must meet all rules:</p>
+        <ul class="mt-2 list-disc pl-5 space-y-1">
+          <li :class="lenOK ? 'line-through text-emerald-700' : 'text-rose-700'">
+            At least 8 characters
+          </li>
+          <li :class="hasUpper ? 'line-through text-emerald-700' : 'text-rose-700'">
+            At least 1 uppercase letter
+          </li>
+          <li :class="hasSpecial ? 'line-through text-emerald-700' : 'text-rose-700'">
+            At least 1 special character
+          </li>
+        </ul>
+        <p v-if="!confirmOK" class="mt-2 text-rose-700">
           Password confirmation does not match.
         </p>
       </div>
 
-      <!-- Messages -->
       <p v-if="msg" class="text-sm text-emerald-600">{{ msg }}</p>
       <p v-if="error" class="text-sm text-rose-600">{{ error }}</p>
 
-      <!-- Submit -->
       <button
-        :disabled="loading || formInvalid"
+        :disabled="loading"
         class="w-full rounded-lg px-4 py-2 bg-slate-900 text-white hover:bg-slate-800 disabled:opacity-50"
       >
         {{ loading ? 'Signing up...' : 'Sign up' }}
