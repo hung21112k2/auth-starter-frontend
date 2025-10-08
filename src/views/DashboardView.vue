@@ -48,13 +48,16 @@ onMounted(load)
         <p class="mt-1 text-xl font-semibold">{{ me.id }}</p>
       </div>
 
-      <!-- Email: wider (span 2 columns) + no wrap + horizontal scroll if still long -->
+      <!-- Username -->
+      <div class="bg-white p-4 rounded-xl shadow">
+        <p class="text-xs text-slate-500">Username</p>
+        <p class="mt-1 text-xl font-semibold">{{ me.username }}</p>
+      </div>
+
+      <!-- Email (span 2) -->
       <div class="bg-white p-4 rounded-xl shadow sm:col-span-2 min-w-0">
         <p class="text-xs text-slate-500">Email</p>
-        <p
-          class="mt-1 text-xl font-semibold whitespace-nowrap overflow-x-auto no-scrollbar"
-          :title="me.email"
-        >
+        <p class="mt-1 text-xl font-semibold whitespace-nowrap overflow-x-auto no-scrollbar" :title="me.email">
           {{ me.email }}
         </p>
       </div>
@@ -69,7 +72,6 @@ onMounted(load)
 </template>
 
 <style>
-/* Hide scrollbar for aesthetics, still scrollable (browser-dependent) */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 </style>

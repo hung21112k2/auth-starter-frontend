@@ -5,16 +5,28 @@ import api from '@/services/api'
 import { setToken } from '@/services/auth'
 
 const router = useRouter()
-const email = ref('')
+
+// có thể là email hoặc username
+const identifier = ref('')
 const password = ref('')
+
 const loading = ref(false)
 const error = ref('')
 
-async function onSubmit() {
+async function onSubmit () {
   error.value = ''
+  if (!identifier.value.trim() || !password.value) {
+    error.value = 'Please enter email/username and password.'
+    return
+  }
+
   loading.value = true
   try {
-    const res = await api.login({ email: email.value, password: password.value })
+    // backend sẽ tự nhận diện: có '@' -> email, không có -> username
+    const res = await api.login({
+      email: identifier.value.trim(),
+      password: password.value,
+    })
     setToken(res.token)
     router.push({ name: 'dashboard' })
   } catch (e) {
@@ -31,20 +43,24 @@ async function onSubmit() {
 
     <form @submit.prevent="onSubmit" class="space-y-4 bg-white p-6 rounded-xl shadow">
       <div>
-        <label class="block text-sm mb-1">Email</label>
+        <label class="block text-sm mb-1">Email or Username</label>
         <input
-          v-model="email"
-          type="email"
+          v-model.trim="identifier"
+          type="text"
           required
+          autocomplete="username"
+          placeholder=""
           class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring"
         />
       </div>
+
       <div>
         <label class="block text-sm mb-1">Password</label>
         <input
           v-model="password"
           type="password"
           required
+          autocomplete="current-password"
           class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring"
         />
       </div>

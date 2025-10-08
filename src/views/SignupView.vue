@@ -7,6 +7,7 @@ const router = useRouter()
 
 const fullName = ref('')
 const email = ref('')
+const username = ref('')
 const password = ref('')
 const confirmPassword = ref('')
 
@@ -14,26 +15,26 @@ const loading = ref(false)
 const msg = ref('')
 const error = ref('')
 
-// Chỉ bật khi bấm submit mà sai
+// chỉ bật khi bấm submit mà sai
 const showRules = ref(false)
 const clearRules = () => { showRules.value = false }
 
-// === Yêu cầu mật khẩu: >= 8 ký tự, >= 1 in hoa, >= 1 ký tự đặc biệt ===
+// Password rules: >= 8 ký tự, >= 1 in hoa, >= 1 ký tự đặc biệt
 const lenOK = computed(() => password.value.length >= 8)
 const hasUpper = computed(() => /[A-Z]/.test(password.value))
 const hasSpecial = computed(() => /[^A-Za-z0-9]/.test(password.value))
-const confirmOK = computed(() =>
-  confirmPassword.value !== '' && confirmPassword.value === password.value
-)
+const confirmOK = computed(() => confirmPassword.value !== '' && confirmPassword.value === password.value)
 const rulesInvalid = computed(() => !lenOK.value || !hasUpper.value || !hasSpecial.value)
+
+// Username cơ bản: 3-50 ký tự, chữ/số/underscore, không khoảng trắng
+const usernameOK = computed(() => /^[A-Za-z0-9_]{3,50}$/.test(username.value || ''))
 
 async function onSubmit () {
   msg.value = ''
   error.value = ''
   showRules.value = false
 
-  // Nếu vi phạm rule hoặc confirm sai -> hiện khối quy tắc & dừng
-  if (rulesInvalid.value || !confirmOK.value) {
+  if (!usernameOK.value || rulesInvalid.value || !confirmOK.value) {
     showRules.value = true
     return
   }
@@ -42,6 +43,7 @@ async function onSubmit () {
   try {
     await api.signup({
       email: email.value.trim(),
+      username: username.value.trim(),
       password: password.value,
       full_name: fullName.value.trim(),
     })
@@ -84,6 +86,23 @@ async function onSubmit () {
         />
       </div>
 
+      <!-- Username -->
+      <div>
+        <label class="block text-sm mb-1">Username</label>
+        <input
+          v-model.trim="username"
+          type="text"
+          required
+          minlength="3"
+          maxlength="50"
+          autocomplete="username"
+          :class="[
+            'w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring',
+            showRules && !usernameOK ? 'border-rose-500' : ''
+          ]"
+        />
+      </div>
+
       <!-- Password -->
       <div>
         <label class="block text-sm mb-1">Password</label>
@@ -116,18 +135,21 @@ async function onSubmit () {
         />
       </div>
 
-      <!-- Khối quy tắc: chỉ hiện sau khi bấm Sign up mà sai -->
+      <!-- Khối quy tắc chỉ hiện khi bấm Sign up mà sai -->
       <div v-if="showRules" class="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm">
-        <p class="font-medium text-rose-700">Password must meet all rules:</p>
+        <p class="font-medium text-rose-700">Please fix the following:</p>
         <ul class="mt-2 list-disc pl-5 space-y-1">
+          <li :class="usernameOK ? 'line-through text-emerald-700' : 'text-rose-700'">
+            Username: 3–50 chars, letters/numbers/_ only
+          </li>
           <li :class="lenOK ? 'line-through text-emerald-700' : 'text-rose-700'">
-            At least 8 characters
+            Password ≥ 8 characters
           </li>
           <li :class="hasUpper ? 'line-through text-emerald-700' : 'text-rose-700'">
-            At least 1 uppercase letter
+            Password has at least 1 uppercase letter
           </li>
           <li :class="hasSpecial ? 'line-through text-emerald-700' : 'text-rose-700'">
-            At least 1 special character
+            Password has at least 1 special character
           </li>
         </ul>
         <p v-if="!confirmOK" class="mt-2 text-rose-700">
