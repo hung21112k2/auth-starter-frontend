@@ -11,7 +11,6 @@ const sending = ref(false)
 const msg = ref('')
 const error = ref('')
 
-// nếu tab khác đã verify thì tự chuyển
 function redirectIfVerifiedFlag() {
   const v = localStorage.getItem('auth.email_verified')
   if (v) {
@@ -42,7 +41,6 @@ async function resend() {
 onMounted(() => {
   redirectIfVerifiedFlag()
   window.addEventListener('storage', onStorage)
-  // fallback: khi quay lại tab này
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) redirectIfVerifiedFlag()
   })

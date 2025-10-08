@@ -19,7 +19,6 @@ const loading = ref(false)
 const msg = ref('')
 const error = ref('')
 
-// chỉ bật khi ấn submit mà sai
 const showRules = ref(false)
 const clearRules = () => { showRules.value = false }
 
@@ -33,7 +32,6 @@ async function submit () {
   error.value = ''; msg.value = ''
   if (!token) { error.value = 'Missing token.'; return }
 
-  // nếu vi phạm rule hoặc confirm sai -> hiện khối quy tắc & dừng
   if (rulesInvalid.value || !matchOK.value) {
     showRules.value = true
     return
