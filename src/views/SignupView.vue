@@ -15,18 +15,18 @@ const loading = ref(false)
 const msg = ref('')
 const error = ref('')
 
-// chỉ bật khi bấm submit mà sai
+const showPwd = ref(false)
+const showPwd2 = ref(false)
+
 const showRules = ref(false)
 const clearRules = () => { showRules.value = false }
 
-// Password rules: >= 8 ký tự, >= 1 in hoa, >= 1 ký tự đặc biệt
 const lenOK = computed(() => password.value.length >= 8)
 const hasUpper = computed(() => /[A-Z]/.test(password.value))
 const hasSpecial = computed(() => /[^A-Za-z0-9]/.test(password.value))
 const confirmOK = computed(() => confirmPassword.value !== '' && confirmPassword.value === password.value)
 const rulesInvalid = computed(() => !lenOK.value || !hasUpper.value || !hasSpecial.value)
 
-// Username cơ bản: 3-50 ký tự, chữ/số/underscore, không khoảng trắng
 const usernameOK = computed(() => /^[A-Za-z0-9_]{3,50}$/.test(username.value || ''))
 
 async function onSubmit () {
@@ -103,39 +103,78 @@ async function onSubmit () {
         />
       </div>
 
-      <!-- Password -->
+      <!-- Password (with eye) -->
       <div>
         <label class="block text-sm mb-1">Password</label>
-        <input
-          v-model="password"
-          @input="clearRules"
-          type="password"
-          required
-          autocomplete="new-password"
-          :class="[
-            'w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring',
-            showRules && (!lenOK || !hasUpper || !hasSpecial) ? 'border-rose-500' : ''
-          ]"
-        />
+        <div class="relative">
+          <input
+            v-model="password"
+            @input="clearRules"
+            :type="showPwd ? 'text' : 'password'"
+            required
+            autocomplete="new-password"
+            :class="[
+              'w-full border rounded-lg px-3 py-2 pr-11 focus:outline-none focus:ring',
+              showRules && (!lenOK || !hasUpper || !hasSpecial) ? 'border-rose-500' : ''
+            ]"
+          />
+          <button
+            type="button"
+            class="absolute inset-y-0 right-0 px-3 flex items-center text-slate-500 hover:text-slate-700"
+            :aria-pressed="showPwd"
+            title="Show/Hide password"
+            @click="showPwd = !showPwd"
+          >
+            <!-- eye -->
+            <svg v-if="!showPwd" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+            <!-- eye-off -->
+            <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 3l18 18"/>
+              <path d="M9.9 4.2A10.9 10.9 0 0 1 12 4c6.5 0 10 7 10 7a17.4 17.4 0 0 1-3.2 4.1M6 6A16.5 16.5 0 0 0 2 11s3.5 7 10 7a10.7 10.7 0 0 0 3.1-.4"/>
+            </svg>
+            <span class="sr-only">Toggle password</span>
+          </button>
+        </div>
       </div>
 
-      <!-- Confirm Password -->
+      <!-- Confirm Password (with eye) -->
       <div>
         <label class="block text-sm mb-1">Confirm password</label>
-        <input
-          v-model="confirmPassword"
-          @input="clearRules"
-          type="password"
-          required
-          autocomplete="new-password"
-          :class="[
-            'w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring',
-            showRules && !confirmOK ? 'border-rose-500' : ''
-          ]"
-        />
+        <div class="relative">
+          <input
+            v-model="confirmPassword"
+            @input="clearRules"
+            :type="showPwd2 ? 'text' : 'password'"
+            required
+            autocomplete="new-password"
+            :class="[
+              'w-full border rounded-lg px-3 py-2 pr-11 focus:outline-none focus:ring',
+              showRules && !confirmOK ? 'border-rose-500' : ''
+            ]"
+          />
+          <button
+            type="button"
+            class="absolute inset-y-0 right-0 px-3 flex items-center text-slate-500 hover:text-slate-700"
+            :aria-pressed="showPwd2"
+            title="Show/Hide password"
+            @click="showPwd2 = !showPwd2"
+          >
+            <svg v-if="!showPwd2" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 3l18 18"/>
+              <path d="M9.9 4.2A10.9 10.9 0 0 1 12 4c6.5 0 10 7 10 7a17.4 17.4 0 0 1-3.2 4.1M6 6A16.5 16.5 0 0 0 2 11s3.5 7 10 7a10.7 10.7 0 0 0 3.1-.4"/>
+            </svg>
+            <span class="sr-only">Toggle confirm password</span>
+          </button>
+        </div>
       </div>
 
-      <!-- Khối quy tắc chỉ hiện khi bấm Sign up mà sai -->
       <div v-if="showRules" class="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm">
         <p class="font-medium text-rose-700">Please fix the following:</p>
         <ul class="mt-2 list-disc pl-5 space-y-1">
@@ -161,7 +200,6 @@ async function onSubmit () {
       <p v-if="msg" class="text-sm text-emerald-600">{{ msg }}</p>
       <p v-if="error" class="text-sm text-rose-600">{{ error }}</p>
 
-      <!-- Submit: chỉ disable khi loading -->
       <button
         :disabled="loading"
         class="w-full rounded-lg px-4 py-2 bg-slate-900 text-white hover:bg-slate-800 disabled:opacity-50"
