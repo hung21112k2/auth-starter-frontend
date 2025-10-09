@@ -30,10 +30,6 @@ export const api = {
   // verify email
   verifyEmail:  (token) => request(`/auth/verify?token=${encodeURIComponent(token)}`),
   resendVerify: (email) => request('/auth/resend', { method: 'POST', body: { email } }),
-
-  // forgot / reset
-  forgotPassword: (email) => request('/auth/forgot', { method: 'POST', body: { email } }),
-  resetPassword:  ({ token, password }) => request('/auth/reset', { method: 'POST', body: { token, password } }),
 }
 
 export default api

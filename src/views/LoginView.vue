@@ -24,7 +24,7 @@ async function onSubmit () {
     router.push({ name: 'dashboard' })
   } catch (e) {
     if (String(e.message).toLowerCase().includes('not verified')) {
-      error.value = 'Email chưa xác thực. Kiểm tra hộp thư hoặc bấm “Resend” ở trang Verify.'
+      error.value = 'Email not verified. Check your inbox or click “Resend” on the Verify page.'
     } else {
       error.value = e.message || 'Login failed'
     }
@@ -39,19 +39,32 @@ async function onSubmit () {
     <form @submit.prevent="onSubmit" class="space-y-4 bg-white p-6 rounded-xl shadow">
       <div>
         <label class="block text-sm mb-1">Email or Username</label>
-        <input v-model.trim="identifier" type="text" required autocomplete="username"
-               class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring" />
+        <input
+          v-model.trim="identifier"
+          type="text"
+          required
+          autocomplete="username"
+          class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring"
+        />
       </div>
 
       <div>
         <label class="block text-sm mb-1">Password</label>
         <div class="relative">
-          <input v-model="password" :type="showPwd ? 'text' : 'password'" required autocomplete="current-password"
-                 class="w-full border rounded-lg px-3 py-2 pr-11 focus:outline-none focus:ring" />
-          <button type="button"
-                  class="absolute inset-y-0 right-0 px-3 flex items-center text-slate-500 hover:text-slate-700"
-                  :aria-pressed="showPwd" title="Show/Hide password"
-                  @click="showPwd = !showPwd">
+          <input
+            v-model="password"
+            :type="showPwd ? 'text' : 'password'"
+            required
+            autocomplete="current-password"
+            class="w-full border rounded-lg px-3 py-2 pr-11 focus:outline-none focus:ring"
+          />
+          <button
+            type="button"
+            class="absolute inset-y-0 right-0 px-3 flex items-center text-slate-500 hover:text-slate-700"
+            :aria-pressed="showPwd"
+            title="Show/Hide password"
+            @click="showPwd = !showPwd"
+          >
             <svg v-if="!showPwd" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>
             </svg>
@@ -61,9 +74,6 @@ async function onSubmit () {
             <span class="sr-only">Toggle password</span>
           </button>
         </div>
-        <RouterLink to="/forgot-password" class="text-sm text-slate-600 hover:underline inline-block mt-1">
-          Forgot password?
-        </RouterLink>
       </div>
 
       <p v-if="error" class="text-sm text-rose-600">{{ error }}</p>
@@ -73,7 +83,8 @@ async function onSubmit () {
       </button>
 
       <p class="text-sm text-slate-500">
-        Don’t have an account? <RouterLink to="/signup" class="text-slate-900 hover:underline">Sign Up</RouterLink>
+        Don’t have an account?
+        <RouterLink to="/signup" class="text-slate-900 hover:underline">Sign Up</RouterLink>
       </p>
     </form>
   </div>
