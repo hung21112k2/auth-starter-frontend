@@ -11,6 +11,11 @@ const showPwd = ref(false)
 const loading = ref(false)
 const error = ref('')
 
+function loginWith(provider) {
+  
+  window.location.href = `${import.meta.env.VITE_API_BASE_URL}/oauth/${provider}/login`
+}
+
 async function onSubmit () {
   error.value = ''
   if (!identifier.value.trim() || !password.value) {
@@ -81,6 +86,17 @@ async function onSubmit () {
       <button :disabled="loading" class="w-full rounded-lg px-4 py-2 bg-slate-900 text-white hover:bg-slate-800 disabled:opacity-50">
         {{ loading ? 'Logging in...' : 'Log In' }}
       </button>
+
+      <div class="pt-2 grid grid-cols-1 gap-2">
+        <button type="button" @click="loginWith('google')"
+                class="w-full border rounded-lg px-4 py-2 hover:bg-slate-50">
+          Continue with Google
+        </button>
+        <button type="button" @click="loginWith('facebook')"
+                class="w-full border rounded-lg px-4 py-2 hover:bg-slate-50">
+          Continue with Facebook
+        </button>
+      </div>
 
       <p class="text-sm text-slate-500">
         Don’t have an account?
