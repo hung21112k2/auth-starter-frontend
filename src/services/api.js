@@ -30,6 +30,9 @@ export const api = {
   // verify email
   verifyEmail:  (token) => request(`/auth/verify?token=${encodeURIComponent(token)}`),
   resendVerify: (email) => request('/auth/resend', { method: 'POST', body: { email } }),
+
+ 
+  checkVerified: (email) => request(`/auth/status?email=${encodeURIComponent(email)}`),
 }
 
 export default api

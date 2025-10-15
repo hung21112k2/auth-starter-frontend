@@ -1,15 +1,16 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import api from '@/services/api'
-import { clearToken } from '@/services/auth'
-import { useRouter } from 'vue-router'
 
-const router = useRouter()
+import Card from 'primevue/card'
+import Skeleton from 'primevue/skeleton'
+import Message from 'primevue/message'
+
 const me = ref(null)
 const loading = ref(true)
 const error = ref('')
 
-async function load() {
+async function load () {
   loading.value = true
   error.value = ''
   try {
@@ -21,57 +22,53 @@ async function load() {
   }
 }
 
-function logout() {
-  clearToken()
-  router.push({ name: 'login' })
-}
-
 onMounted(load)
 </script>
 
 <template>
-  <div class="space-y-4">
-    <div class="flex items-center justify-between">
-      <h2 class="text-2xl font-bold">Dashboard</h2>
-      <button @click="logout" class="px-3 py-1.5 rounded-lg border hover:bg-slate-100">
-        Log out
-      </button>
+
+  <section class="min-h-[calc(100vh-4rem)] flex items-start justify-center pt-6 pb-10">
+    <div class="w-full px-4">
+      <div class="mx-auto max-w-[920px]">
+        <Card class="rounded-2xl border border-slate-100 shadow-2xl">
+          <template #content>
+            <!-- Loading -->
+            <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Skeleton class="h-24" />
+              <Skeleton class="h-24" />
+              <Skeleton class="h-24 md:col-span-2" />
+            </div>
+
+            <!-- Error -->
+            <Message v-else-if="error" severity="error" :closable="false">{{ error }}</Message>
+
+            <!-- Content -->
+            <div v-else class="grid grid-cols-1 gap-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="rounded-xl border border-slate-200 p-5 bg-white/70">
+                  <div class="text-sm text-slate-500">User ID</div>
+                  <div class="mt-1 text-lg font-semibold">{{ me.id }}</div>
+                </div>
+
+                <div class="rounded-xl border border-slate-200 p-5 bg-white/70">
+                  <div class="text-sm text-slate-500">Username</div>
+                  <div class="mt-1 text-lg font-semibold break-all">{{ me.username }}</div>
+                </div>
+              </div>
+
+              <div class="rounded-xl border border-slate-200 p-5 bg-white/70">
+                <div class="text-sm text-slate-500">Email</div>
+                <div class="mt-1 text-lg font-semibold break-all">{{ me.email }}</div>
+              </div>
+
+              <div class="rounded-xl border border-slate-200 p-5 bg-white/70">
+                <div class="text-sm text-slate-500">Full name</div>
+                <div class="mt-1 text-lg font-semibold">{{ me.full_name }}</div>
+              </div>
+            </div>
+          </template>
+        </Card>
+      </div>
     </div>
-
-    <div v-if="loading" class="text-slate-500">Loading...</div>
-    <div v-else-if="error" class="text-rose-600">{{ error }}</div>
-
-    <div v-else class="grid gap-4 sm:grid-cols-3">
-      <!-- User ID -->
-      <div class="bg-white p-4 rounded-xl shadow">
-        <p class="text-xs text-slate-500">User ID</p>
-        <p class="mt-1 text-xl font-semibold">{{ me.id }}</p>
-      </div>
-
-      <!-- Username -->
-      <div class="bg-white p-4 rounded-xl shadow">
-        <p class="text-xs text-slate-500">Username</p>
-        <p class="mt-1 text-xl font-semibold">{{ me.username }}</p>
-      </div>
-
-      <!-- Email (span 2) -->
-      <div class="bg-white p-4 rounded-xl shadow sm:col-span-2 min-w-0">
-        <p class="text-xs text-slate-500">Email</p>
-        <p class="mt-1 text-xl font-semibold whitespace-nowrap overflow-x-auto no-scrollbar" :title="me.email">
-          {{ me.email }}
-        </p>
-      </div>
-
-      <!-- Full name -->
-      <div class="bg-white p-4 rounded-xl shadow">
-        <p class="text-xs text-slate-500">Full name</p>
-        <p class="mt-1 text-xl font-semibold">{{ me.full_name }}</p>
-      </div>
-    </div>
-  </div>
+  </section>
 </template>
-
-<style>
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-</style>

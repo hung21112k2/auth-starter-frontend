@@ -4,15 +4,25 @@ import { useRouter, RouterLink } from 'vue-router'
 import api from '@/services/api'
 import { setToken } from '@/services/auth'
 
+import Card from 'primevue/card'
+import InputText from 'primevue/inputtext'
+import Password from 'primevue/password'
+import Button from 'primevue/button'
+import Divider from 'primevue/divider'
+import Message from 'primevue/message'
+import Toast from 'primevue/toast'
+import InputGroup from 'primevue/inputgroup'
+import InputGroupAddon from 'primevue/inputgroupaddon'
+import { useToast } from 'primevue/usetoast'
+
 const router = useRouter()
 const identifier = ref('')
 const password = ref('')
-const showPwd = ref(false)
 const loading = ref(false)
 const error = ref('')
+const toast = useToast()
 
-function loginWith(provider) {
-  
+function loginWith (provider) {
   window.location.href = `${import.meta.env.VITE_API_BASE_URL}/oauth/${provider}/login`
 }
 
@@ -26,82 +36,77 @@ async function onSubmit () {
   try {
     const res = await api.login({ email: identifier.value.trim(), password: password.value })
     setToken(res.token)
+    toast.add({ severity: 'success', summary: 'Logged in', life: 1500 })
     router.push({ name: 'dashboard' })
   } catch (e) {
-    if (String(e.message).toLowerCase().includes('not verified')) {
-      error.value = 'Email not verified. Check your inbox or click “Resend” on the Verify page.'
-    } else {
-      error.value = e.message || 'Login failed'
-    }
+    const msg = String(e?.message || 'Login failed')
+    error.value = msg.toLowerCase().includes('not verified')
+      ? 'Email not verified. Check your inbox or click “Resend”.'
+      : msg
   } finally { loading.value = false }
 }
 </script>
 
 <template>
-  <div class="max-w-md mx-auto">
-    <h2 class="text-2xl font-bold mb-4">Log In</h2>
+  <Toast />
 
-    <form @submit.prevent="onSubmit" class="space-y-4 bg-white p-6 rounded-xl shadow">
-      <div>
-        <label class="block text-sm mb-1">Email or Username</label>
-        <input
-          v-model.trim="identifier"
-          type="text"
-          required
-          autocomplete="username"
-          class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring"
-        />
+  <section class="relative min-h-screen overflow-hidden flex items-start justify-center pt-24
+                  bg-gradient-to-b from-orange-50 via-amber-50 to-white">
+    <div class="pointer-events-none absolute right-[8%] top-24 w-[760px] h-[760px] rounded-full
+                bg-gradient-to-br from-orange-400 via-rose-400 to-pink-500 opacity-40 blur-3xl" />
+    <div class="pointer-events-none absolute left-[12%] bottom-20 w-[360px] h-[360px] rounded-full
+                bg-gradient-to-br from-amber-300 to-orange-400 opacity-40 blur-2xl" />
+
+    <div class="w-full px-4">
+      <h1 class="text-center text-[34px] md:text-[40px] font-extrabold tracking-tight text-slate-800 mb-6">
+        Log In
+      </h1>
+
+      <div class="mx-auto max-w-[560px]">
+        <Card class="rounded-2xl border border-slate-100 shadow-2xl">
+          <template #content>
+            <form @submit.prevent="onSubmit" class="flex flex-col gap-4">
+              <div>
+                <label class="block text-left text-sm text-slate-500 mb-1">Email or Username</label>
+                <InputGroup class="rounded-xl overflow-hidden ring-1 ring-slate-200 focus-within:ring-emerald-500 transition">
+                  <InputGroupAddon><i class="pi pi-user" /></InputGroupAddon>
+                  <InputText v-model.trim="identifier" class="w-full" autocomplete="username" placeholder="Email or Username" />
+                </InputGroup>
+              </div>
+
+              <div>
+                <label class="block text-left text-sm text-slate-500 mb-1">Password</label>
+                <InputGroup class="rounded-xl overflow-hidden ring-1 ring-slate-200 focus-within:ring-emerald-500 transition">
+                  <InputGroupAddon><i class="pi pi-lock" /></InputGroupAddon>
+                  <Password v-model="password" :feedback="false" :toggleMask="true" inputClass="w-full"
+                            autocomplete="current-password" placeholder="Password" />
+                </InputGroup>
+              </div>
+
+              <Message v-if="error" severity="error" :closable="false">{{ error }}</Message>
+
+              <Button
+                type="submit"
+                :loading="loading"
+                label="Log In"
+                class="w-full h-12 rounded-full font-semibold !border-0
+                       bg-gradient-to-r from-emerald-600 to-emerald-500 text-white
+                       hover:from-emerald-700 hover:to-emerald-600 shadow-md"
+              />
+
+              <Divider align="center" class="my-1">or</Divider>
+
+              <Button label="Continue with Google" icon="pi pi-google" class="w-full p-button-outlined rounded-full h-11" @click="loginWith('google')" />
+              <Button label="Continue with Facebook" icon="pi pi-facebook" class="w-full p-button-outlined rounded-full h-11" @click="loginWith('facebook')" />
+
+              <div class="text-center text-sm text-slate-600">
+                Don’t have an account?
+                <RouterLink to="/signup" class="text-primary hover:underline">Sign Up</RouterLink>
+              </div>
+            </form>
+          </template>
+        </Card>
       </div>
-
-      <div>
-        <label class="block text-sm mb-1">Password</label>
-        <div class="relative">
-          <input
-            v-model="password"
-            :type="showPwd ? 'text' : 'password'"
-            required
-            autocomplete="current-password"
-            class="w-full border rounded-lg px-3 py-2 pr-11 focus:outline-none focus:ring"
-          />
-          <button
-            type="button"
-            class="absolute inset-y-0 right-0 px-3 flex items-center text-slate-500 hover:text-slate-700"
-            :aria-pressed="showPwd"
-            title="Show/Hide password"
-            @click="showPwd = !showPwd"
-          >
-            <svg v-if="!showPwd" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>
-            </svg>
-            <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M3 3l18 18"/><path d="M9.9 4.2A10.9 10.9 0 0 1 12 4c6.5 0 10 7 10 7a17.4 17.4 0 0 1-3.2 4.1M6 6A16.5 16.5 0 0 0 2 11s3.5 7 10 7a10.7 10.7 0 0 0 3.1-.4"/>
-            </svg>
-            <span class="sr-only">Toggle password</span>
-          </button>
-        </div>
-      </div>
-
-      <p v-if="error" class="text-sm text-rose-600">{{ error }}</p>
-
-      <button :disabled="loading" class="w-full rounded-lg px-4 py-2 bg-slate-900 text-white hover:bg-slate-800 disabled:opacity-50">
-        {{ loading ? 'Logging in...' : 'Log In' }}
-      </button>
-
-      <div class="pt-2 grid grid-cols-1 gap-2">
-        <button type="button" @click="loginWith('google')"
-                class="w-full border rounded-lg px-4 py-2 hover:bg-slate-50">
-          Continue with Google
-        </button>
-        <button type="button" @click="loginWith('facebook')"
-                class="w-full border rounded-lg px-4 py-2 hover:bg-slate-50">
-          Continue with Facebook
-        </button>
-      </div>
-
-      <p class="text-sm text-slate-500">
-        Don’t have an account?
-        <RouterLink to="/signup" class="text-slate-900 hover:underline">Sign Up</RouterLink>
-      </p>
-    </form>
-  </div>
+    </div>
+  </section>
 </template>
